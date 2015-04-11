@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "babel": "^5.0.12",
+    "gulp": "^3.8.11",
+    "gulp-jsforce-deploy": "^1.0.1",
+    "gulp-unzip": "^0.1.3",
+    "gulp-zip": "^3.0.2",
+    "jsforce": "^1.4.1",
+    "through2": "^0.6.5",
+    "vinyl": "^0.4.6"
+  }
+}
