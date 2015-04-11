@@ -40,10 +40,9 @@ gulp.task('retrieve', (cb) => {
 gulp.task('delete', (cb) => {
   let version = '33.0';
   let dsttypes = [{ name: 'ApexClass', members: ['A'] }];
-  let pkgtypes = [{ name: 'ApexClass', members: ['*'] }];
   let stream = through.obj();
   stream
-    .pipe(pkgxml('pkg/package.xml', { version, types: pkgtypes }))
+    .pipe(pkgxml('pkg/package.xml', { version, types: [] }))
     .pipe(pkgxml('pkg/destructiveChanges.xml', { version, types: dsttypes }))
     .pipe(zip('pkg.zip'))
     .on('finish', function () {
