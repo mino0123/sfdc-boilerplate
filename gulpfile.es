@@ -42,7 +42,7 @@ gulp.task('delete', (cb) => {
   let dsttypes = [{ name: 'ApexClass', members: ['A'] }];
   let pkgtypes = [{ name: 'ApexClass', members: ['*'] }];
   let stream = through.obj();
-  through.obj()
+  stream
     .pipe(pkgxml('pkg/package.xml', { version, types: pkgtypes }))
     .pipe(pkgxml('pkg/destructiveChanges.xml', { version, types: dsttypes }))
     .pipe(zip('pkg.zip'))
