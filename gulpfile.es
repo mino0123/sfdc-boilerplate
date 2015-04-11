@@ -1,8 +1,10 @@
 let gulp = require('gulp');
 let zip = require('gulp-zip');
 let unzip = require('gulp-unzip');
+let through = require('through2');
 let deploy = require('gulp-jsforce-deploy');
 let retireve = require('./tasks/retrieve.es');
+let pkgxml = require('./tasks/package.es');
 
 const SF_USERNAME = process.env.SF_USERNAME;
 const SF_PASSWORD = process.env.SF_PASSWORD;
@@ -22,7 +24,7 @@ gulp.task('retrieve', (cb) => {
   let singlePackage = true;
   let version       = '33.0';
   let types         = [
-    {name: 'CustomObject', members: 'Account'}
+    {name: 'ApexClass', members: 'AA'}
   ];
   let unpackaged = {version, types};
   retireve({
@@ -33,4 +35,24 @@ gulp.task('retrieve', (cb) => {
     .on('error', cb)
     .pipe(unzip())
     .pipe(gulp.dest('./pkg'));
+});
+
+gulp.task('delete', (cb) => {
+  let version = '33.0';
+  let dsttypes = [{ name: 'ApexClass', members: ['A'] }];
+  let pkgtypes = [{ name: 'ApexClass', members: ['*'] }];
+  let stream = through.obj();
+  through.obj()
+    .pipe(pkgxml('pkg/package.xml', { version, types: pkgtypes }))
+    .pipe(pkgxml('pkg/destructiveChanges.xml', { version, types: dsttypes }))
+    .pipe(zip('pkg.zip'))
+    .on('finish', function () {
+      this
+        // .pipe(gulp.dest('delete/'))
+        .pipe(deploy({
+          username: SF_USERNAME,
+          password: SF_PASSWORD
+        }));
+    });
+  stream.push();
 });
