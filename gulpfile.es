@@ -3,6 +3,8 @@ let zip = require('gulp-zip');
 let unzip = require('gulp-unzip');
 let through = require('through2');
 let file = require('gulp-file');
+let template = require('gulp-template');
+let rename = require("gulp-rename");
 let deploy = require('gulp-jsforce-deploy');
 let retireve = require('./tasks/retrieve.es');
 let packagexml = require('./tasks/lib/object2packagexml.es');
@@ -51,4 +53,32 @@ gulp.task('delete', () => {
       password: SF_PASSWORD
     }));
   stream.push();
+});
+
+gulp.task('field', () => {
+  let obj = {};
+  let fields = obj.fields = [];
+  fields.push({
+    fullName: 'MyField__c',
+    label: 'MyField',
+    length: 255,
+    type: 'Text'
+  });
+  gulp.src('./tasks/templates/object.template')
+    .pipe(template({object: obj}))
+    .pipe(rename("Account.object"))
+    .pipe(gulp.dest('./pkg/objects/'));
+});
+
+gulp.task('fls', () => {
+  let fls = (field, readable, editable) => ({field, readable, editable});
+  let profile = {};
+  profile.custom = true;
+  profile.fieldPermissions = [
+    fls('Account.MyField__c', true, true)
+  ];
+  gulp.src('./tasks/templates/profile.template')
+    .pipe(template({profile: profile}))
+    .pipe(rename("Admin.profile"))
+    .pipe(gulp.dest('./pkg/profiles/'));
 });

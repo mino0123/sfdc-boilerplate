@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+<%
+
+function printProp(obj, name) {
+    if (! obj) {
+        return typeof name === 'undefined' ? '' : name;
+    }
+    var value = obj[name];
+    var tagStart = '<' + name + '>';
+    var tagEnd = '</' + name + '>';
+    if (value) {
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                return '';
+            } else {
+                return tagStart + value.join(tagEnd + '\n' + tagStart) + tagEnd;
+            }
+        }
+        return tagStart + obj[name] + tagEnd;
+    }
+    return '';
+}
+
+%>
+<% _.forEach(object.actionOverrides, function(ao) { %>
+    <actionOverrides>
+        <actionName><%= ao.actionName %></actionName>
+        <type><%= ao.type %></type>
+    </actionOverrides>
+<% }); %>
+<%= printProp(object, 'compactLayoutAssignment') %>
+<%= printProp(object, 'enableEnhancedLookup') %>
+<%= printProp(object, 'enableFeeds') %>
+<%= printProp(object, 'enableHistory') %>
+<% _.forEach(object.fields, function(fld) { %>
+    <fields>
+        <%= printProp(fld, 'fullName') %>
+        <%= printProp(fld, 'defaultValue') %>
+        <%= printProp(fld, 'externalId') %>
+        <%= printProp(fld, 'label') %>
+        <%= printProp(fld, 'length') %>
+        <%= printProp(fld, 'precision') %>
+        <%= printProp(fld, 'required') %>
+        <%= printProp(fld, 'scale') %>
+        <%= printProp(fld, 'summaryForeignKey') %>
+        <%= printProp(fld, 'summaryOperation') %>
+        <% if (fld.picklist) { %>
+            <picklist>
+            <%= printProp(fld, 'controllingField') %>
+            <% _.forEach(fld.picklist.picklistValues, function(picklist) { %>
+                <picklistValues>
+                    <fullName><%= picklist.fullName %></fullName>
+                    <%= printProp(picklist, 'controllingFieldValues') %>
+                    <default><%= picklist.default %></default>
+                </picklistValues>
+                <%= printProp(picklist, 'sorted') %>
+            <% }); %>
+            </picklist>
+        <% } %>
+        <%= printProp(fld, 'trackFeedHistory') %>
+        <%= printProp(fld, 'trackHistory') %>
+        <%= printProp(fld, 'type') %>
+        <%= printProp(fld, 'unique') %>
+        <%= printProp(fld, 'visibleLines') %>
+    </fields>
+<% }); %>
+<%= printProp(object, 'recordTypeTrackFeedHistory') %>
+<%= printProp(object, 'recordTypeTrackHistory') %>
+<%= printProp(object, 'sharingModel') %>
+</CustomObject>
