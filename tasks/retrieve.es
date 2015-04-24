@@ -19,8 +19,8 @@ module.exports = (options = {}) => {
   conn
     .login(options.username, options.password)
     .then(() => {
-      conn.metadata.pollInterval = options.pollInterval || 60e3;
-      conn.metadata.pollTimeout = options.pollTimeout || 5e3;
+      conn.metadata.pollInterval = options.pollInterval || 5e3;
+      conn.metadata.pollTimeout = options.pollTimeout || 60e3;
       return conn
         .metadata.retrieve(options.retrieve).complete({ details: true });
     }, err => {
