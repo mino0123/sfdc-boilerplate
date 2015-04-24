@@ -79,6 +79,6 @@ gulp.task('fls', () => {
   ];
   gulp.src('./tasks/templates/profile.template')
     .pipe(template({profile: profile}))
-    .pipe(rename("Admin.profile"))
+    .pipe(rename('Admin.profile'))
     .pipe(gulp.dest('./pkg/profiles/'));
 });
