@@ -20,7 +20,7 @@ module.exports = (options = {}) => {
     .login(options.username, options.password)
     .then(() => {
       conn.metadata.pollInterval = options.pollInterval || 60e3;
-      conn.metadata.pollInterval = options.pollTimeout || 5e3;
+      conn.metadata.pollTimeout = options.pollTimeout || 5e3;
       return conn
         .metadata.retrieve(options.retrieve).complete({ details: true });
     }, err => {
