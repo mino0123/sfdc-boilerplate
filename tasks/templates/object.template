@@ -40,7 +40,11 @@ function printProp(obj, name) {
         <%= printProp(fld, 'externalId') %>
         <%= printProp(fld, 'label') %>
         <%= printProp(fld, 'length') %>
+        <%= printProp(fld, 'maskChar') %>
+        <%= printProp(fld, 'maskType') %>
         <%= printProp(fld, 'precision') %>
+        <%= printProp(fld, 'referenceTo') %>
+        <%= printProp(fld, 'relationshipName') %>
         <%= printProp(fld, 'required') %>
         <%= printProp(fld, 'scale') %>
         <%= printProp(fld, 'summaryForeignKey') %>
@@ -52,7 +56,7 @@ function printProp(obj, name) {
                 <picklistValues>
                     <fullName><%= picklist.fullName %></fullName>
                     <%= printProp(picklist, 'controllingFieldValues') %>
-                    <default><%= picklist.default %></default>
+                    <%= printProp(picklist, 'default') %>
                 </picklistValues>
                 <%= printProp(picklist, 'sorted') %>
             <% }); %>
@@ -65,7 +69,16 @@ function printProp(obj, name) {
         <%= printProp(fld, 'visibleLines') %>
     </fields>
 <% }); %>
+<%= printProp(object, 'deploymentStatus') %>
 <%= printProp(object, 'recordTypeTrackFeedHistory') %>
 <%= printProp(object, 'recordTypeTrackHistory') %>
 <%= printProp(object, 'sharingModel') %>
+<% if (object.nameField) { %>
+    <nameField>
+        <%= printProp(object.nameField, 'label') %>
+        <%= printProp(object.nameField, 'length') %>
+        <%= printProp(object.nameField, 'type') %>
+    </nameField>
+<% } %>
+<%= printProp(object, 'label') %>
 </CustomObject>
