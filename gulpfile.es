@@ -8,6 +8,7 @@ let rename = require('gulp-rename');
 let deploy = require('gulp-jsforce-deploy');
 let retireve = require('./tasks/retrieve.es');
 let packagexml = require('./tasks/lib/object2packagexml.es');
+let jsforce = require('jsforce');
 
 const SF_USERNAME = process.env.SF_USERNAME;
 const SF_PASSWORD = process.env.SF_PASSWORD;
@@ -81,4 +82,38 @@ gulp.task('fls', () => {
     .pipe(template({profile: profile}))
     .pipe(rename('Admin.profile'))
     .pipe(gulp.dest('./pkg/profiles/'));
+});
+
+gulp.task('layout', (cb) => {
+  let column = (field, behavior) => ({field});
+  let layout = {};
+  layout.layoutSections = [{}];
+  let section = layout.layoutSections[0];
+  section.style = 'OneColumn';
+  let conn = new jsforce.Connection();
+  conn.login(SF_USERNAME, SF_PASSWORD, (err, userInfo) => {
+    conn.sobject('Account').describe(function(err, meta) {
+      if (err) { return console.error(err); }
+      let items = meta.fields
+          .map((f) => {
+            let field = f.name;
+            if (/^Billing/.test(f.name) || /^Shipping/.test(f.name) || !f.createable) {
+              return null;
+            }
+            if (! f.nillable && !f.defaultedOnCreate) {
+              return {field, behavior: 'Required'};
+            }
+            if (field === 'CleanStatus') {
+              return {field, behavior: 'Readonly'};
+            }
+            return {field};
+          })
+          .filter((f) => !!f);
+      section.layoutColumns = [{layoutItems: items}];
+      gulp.src('./tasks/templates/layout.template')
+        .pipe(template({layout}))
+        .pipe(rename('Account-AllFields.layout'))
+        .pipe(gulp.dest('./pkg/layouts/'));
+    });
+  });
 });
