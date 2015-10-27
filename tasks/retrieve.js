@@ -1,10 +1,11 @@
-let jsforce = require('jsforce');
-let through = require('through2');
-let File = require('vinyl');
+const jsforce = require('jsforce');
+const through = require('through2');
+const File = require('vinyl');
 
-module.exports = (options = {}) => {
-  let stream = through.obj();
-  let config = [
+module.exports = (options) => {
+  options = options || {};
+  const stream = through.obj();
+  const config = [
     'loginUrl',
     'accessToken',
     'instanceUrl',
@@ -15,7 +16,7 @@ module.exports = (options = {}) => {
     'logLevel',
     'version'
   ].reduce((c, k) => (c[k] = options[k], c), {});
-  let conn = new jsforce.Connection(config);
+  const conn = new jsforce.Connection(config);
   conn
     .login(options.username, options.password)
     .then(() => {
@@ -28,9 +29,9 @@ module.exports = (options = {}) => {
     })
     .then(res => {
       if (res.success) {
-        let buf = new Buffer(res.zipFile, 'base64');
+        const buf = new Buffer(res.zipFile, 'base64');
         stream.write(new File({contents: buf}));
-        stream.end();
+        // stream.end();
       } else {
         stream.emit('error', new Error('Retrieve failed.'));
       }

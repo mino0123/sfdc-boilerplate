@@ -1,7 +1,6 @@
 {
   "devDependencies": {
-    "babel": "^5.0.12",
-    "gulp": "^3.8.11",
+    "gulp": "^3.9.0",
     "gulp-file": "^0.2.0",
     "gulp-jsforce-deploy": "^1.0.1",
     "gulp-rename": "^1.2.2",
