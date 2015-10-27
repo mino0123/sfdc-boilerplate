@@ -3,8 +3,6 @@ const zip = require('gulp-zip');
 const unzip = require('gulp-unzip');
 const through = require('through2');
 const file = require('gulp-file');
-const template = require('gulp-template');
-const rename = require('gulp-rename');
 const deploy = require('gulp-jsforce-deploy');
 const retireve = require('./tasks/retrieve.js');
 const packagexml = require('./tasks/lib/object2packagexml.js');
@@ -65,9 +63,9 @@ gulp.task('field', () => {
     length: 255,
     type: 'Text'
   });
-  gulp.src('./tasks/templates/object.template')
-    .pipe(template({object: obj}))
-    .pipe(rename("Account.object"))
+  const objectXml = require('./tasks/templates/object.js')(obj);
+  through.obj()
+    .pipe(file('Account.object', objectXml))
     .pipe(gulp.dest('./pkg/objects/'));
 });
 
@@ -78,9 +76,9 @@ gulp.task('fls', () => {
   profile.fieldPermissions = [
     fls('Account.MyField__c', true, true)
   ];
-  gulp.src('./tasks/templates/profile.template')
-    .pipe(template({profile: profile}))
-    .pipe(rename('Admin.profile'))
+  const xml = require('./tasks/templates/profile.js')(profile);
+  through.obj()
+    .pipe(file('Admin.profile', xml))
     .pipe(gulp.dest('./pkg/profiles/'));
 });
 
@@ -110,9 +108,9 @@ gulp.task('layout', (cb) => {
           })
           .filter((f) => !!f);
       section.layoutColumns = [{layoutItems: items}];
-      gulp.src('./tasks/templates/layout.template')
-        .pipe(template({layout}))
-        .pipe(rename('Account-AllFields.layout'))
+      const xml = require('./tasks/templates/layout.js')(layout);
+      through.obj()
+        .pipe(file('Account-AllFields.layout', xml))
         .pipe(gulp.dest('./pkg/layouts/'));
     });
   });
