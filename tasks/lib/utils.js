@@ -6,7 +6,7 @@ module.exports = {
     const value = obj[name];
     const tagStart = '<' + name + '>';
     const tagEnd = '</' + name + '>';
-    if (value) {
+    if (value != null) {
       if (Array.isArray(value)) {
         if (value.length === 0) {
           return '';
