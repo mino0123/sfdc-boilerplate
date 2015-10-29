@@ -12,11 +12,10 @@ function actionOverrides(ao) {
 function picklistValues(value, picklist) {
   return `
   <picklistValues>
-    <fullName><%= value.fullName %></fullName>
+    <fullName>${ value.fullName }</fullName>
     ${ utils.printProp(value, 'controllingFieldValues') }
     ${ utils.printProp(value, 'default') }
-  </picklistValues>
-
+  </picklistValues>`
 }
 
 function picklist(picklist, field) {
@@ -26,7 +25,7 @@ function picklist(picklist, field) {
   <picklist>
     ${ utils.printProp(field, 'controllingField') }
     ${ picklist.picklistValues.map(picklistValues) }
-    ${ utils.printProp(picklist, 'sorted') }`;
+    ${ utils.printProp(picklist, 'sorted') }
   </picklist>`;
 }
 
@@ -61,9 +60,9 @@ function nameField(nameField) {
   return `
   <nameField>
     ${ utils.printProp(nameField, 'visibleLines') }
-    ${ printProp(nameField, 'label') }
-    ${ printProp(nameField, 'length') }
-    ${ printProp(nameField, 'type') }
+    ${ utils.printProp(nameField, 'label') }
+    ${ utils.printProp(nameField, 'length') }
+    ${ utils.printProp(nameField, 'type') }
   </nameField>`;
 }
 
