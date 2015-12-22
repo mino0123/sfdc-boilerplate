@@ -8,21 +8,23 @@ const retireve = require('./tasks/retrieve.js');
 const jsforce = require('jsforce');
 const metadata = require('salesforce-metadata-xml-builder');
 
+const API_VERSION = '35.0';
 const SF_USERNAME = process.env.SF_USERNAME;
 const SF_PASSWORD = process.env.SF_PASSWORD;
 
 gulp.task('retrieve', (cb) => {
-  const apiVersion    = '35.0';
-  const singlePackage = true;
-  const version       = '35.0';
-  const types         = [
-    {name: 'Profile', members: '*'}
-  ];
-  const unpackaged = {version, types};
+  const retrieveArgs = {
+    apiVersion: API_VERSION,
+    singlePackage: true,
+    unpackaged: {
+      types: [{ name: 'Profile', members: ['*'] }],
+      version: API_VERSION
+    }
+  };
   retireve({
     username: SF_USERNAME,
     password: SF_PASSWORD,
-    retrieve: {apiVersion, singlePackage, unpackaged}
+    retrieve: retrieveArgs
   })
     .on('error', cb)
     .pipe(unzip())
@@ -30,7 +32,7 @@ gulp.task('retrieve', (cb) => {
 });
 
 gulp.task('delete', () => {
-  const version = '35.0';
+  const version = API_VERSION;
   const dsttypes = [{ name: 'ApexClass', members: ['A'] }];
   const packagexml = metadata.Package({ version, types: [] });
   const destructivexml = metadata.Package({ version, types: dsttypes });
@@ -60,7 +62,7 @@ gulp.task('deploy-field', () => {
   const objectxml = metadata.CustomObject(object);
   const packagexml = metadata.Package({
     types: [{ name: 'CustomObject', members: ['Account'] }],
-    version: '35.0'
+    version: API_VERSION
   });
   const objectStream = through.obj()
     .pipe(file('src/objects/Account.object', objectxml, { src: true }))
@@ -80,7 +82,7 @@ gulp.task('deploy-fls', () => {
   });
   const packagexml = metadata.Package({
     types: [{ name: 'Profile', members: ['Admin'] }],
-    version: '35.0'
+    version: API_VERSION
   });
   through.obj()
     .pipe(file('src/profiles/Admin.profile', profilexml, { src: true }))
@@ -121,7 +123,7 @@ gulp.task('deploy-layout', (cb) => {
       const layoutxml = metadata.Layout(layout);
       const packagexml = metadata.Package({
         types: [{ name: 'Layout', members: ['Account-AllFields'] }],
-        version: '35.0'
+        version: API_VERSION
       });
       through.obj()
         .pipe(file('src/layouts/Account-AllFields.layout', layoutxml, { src: true }))
