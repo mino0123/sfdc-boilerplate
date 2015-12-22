@@ -5,28 +5,18 @@ const through = require('through2');
 const file = require('gulp-file');
 const deploy = require('gulp-jsforce-deploy');
 const retireve = require('./tasks/retrieve.js');
-const packagexml = require('./tasks/lib/object2packagexml.js');
 const jsforce = require('jsforce');
+const metadata = require('salesforce-metadata-xml-builder');
 
 const SF_USERNAME = process.env.SF_USERNAME;
 const SF_PASSWORD = process.env.SF_PASSWORD;
 
-gulp.task('deploy', () => {
-  gulp
-    .src('pkg/**', { base: '.' })
-    .pipe(zip('pkg.zip'))
-    .pipe(deploy({
-      username: SF_USERNAME,
-      password: SF_PASSWORD
-    }));
-});
-
 gulp.task('retrieve', (cb) => {
-  const apiVersion    = '33.0';
+  const apiVersion    = '35.0';
   const singlePackage = true;
-  const version       = '33.0';
+  const version       = '35.0';
   const types         = [
-    {name: 'Layout', members: 'Account-Account Layout'}
+    {name: 'Profile', members: '*'}
   ];
   const unpackaged = {version, types};
   retireve({
@@ -40,12 +30,14 @@ gulp.task('retrieve', (cb) => {
 });
 
 gulp.task('delete', () => {
-  const version = '33.0';
+  const version = '35.0';
   const dsttypes = [{ name: 'ApexClass', members: ['A'] }];
+  const packagexml = metadata.Package({ version, types: [] });
+  const destructivexml = metadata.Package({ version, types: dsttypes });
   const stream = through.obj();
   stream
-    .pipe(file('pkg/package.xml', packagexml({ version, types: [] })))
-    .pipe(file('pkg/destructiveChanges.xml', packagexml({ version, types: dsttypes })))
+    .pipe(file('pkg/package.xml', packagexml))
+    .pipe(file('pkg/destructiveChanges.xml', destructivexml))
     .pipe(zip('pkg.zip'))
     .pipe(deploy({
       username: SF_USERNAME,
@@ -54,35 +46,53 @@ gulp.task('delete', () => {
   stream.push();
 });
 
-gulp.task('field', () => {
-  const obj = {};
-  const fields = obj.fields = [];
-  fields.push({
+gulp.task('deploy-field', () => {
+  const object = {
+    fullName: 'Account',
+    fields: []
+  };
+  object.fields.push({
     fullName: 'MyField__c',
     label: 'MyField',
     length: 255,
     type: 'Text'
   });
-  const objectXml = require('./tasks/templates/object.js')(obj);
-  through.obj()
-    .pipe(file('Account.object', objectXml))
-    .pipe(gulp.dest('./pkg/objects/'));
+  const objectxml = metadata.CustomObject(object);
+  const packagexml = metadata.Package({
+    types: [{ name: 'CustomObject', members: ['Account'] }],
+    version: '35.0'
+  });
+  const objectStream = through.obj()
+    .pipe(file('src/objects/Account.object', objectxml, { src: true }))
+    .pipe(file('src/package.xml', packagexml))
+    .pipe(zip('pkg.zip'))
+    .pipe(deploy({
+      username: SF_USERNAME,
+      password: SF_PASSWORD
+    }));
 });
 
-gulp.task('fls', () => {
+gulp.task('deploy-fls', () => {
   const fls = (field, readable, editable) => ({field, readable, editable});
-  const profile = {};
-  profile.custom = true;
-  profile.fieldPermissions = [
-    fls('Account.MyField__c', true, true)
-  ];
-  const xml = require('./tasks/templates/profile.js')(profile);
+  const profilexml = metadata.Profile({
+    custom: true,
+    fieldPermissions: [fls('Account.MyField__c', true, true)]
+  });
+  const packagexml = metadata.Package({
+    types: [{ name: 'Profile', members: ['Admin'] }],
+    version: '35.0'
+  });
   through.obj()
-    .pipe(file('Admin.profile', xml))
-    .pipe(gulp.dest('./pkg/profiles/'));
+    .pipe(file('src/profiles/Admin.profile', profilexml, { src: true }))
+    .pipe(file('src/package.xml', packagexml))
+    .pipe(zip('pkg.zip'))
+    .pipe(deploy({
+      username: SF_USERNAME,
+      password: SF_PASSWORD
+    }));
 });
 
-gulp.task('layout', (cb) => {
+gulp.task('deploy-layout', (cb) => {
   const column = (field, behavior) => ({field});
   const layout = {};
   layout.layoutSections = [{}];
@@ -108,10 +118,20 @@ gulp.task('layout', (cb) => {
           })
           .filter((f) => !!f);
       section.layoutColumns = [{layoutItems: items}];
-      const xml = require('./tasks/templates/layout.js')(layout);
+      const layoutxml = metadata.Layout(layout);
+      const packagexml = metadata.Package({
+        types: [{ name: 'Layout', members: ['Account-AllFields'] }],
+        version: '35.0'
+      });
       through.obj()
-        .pipe(file('Account-AllFields.layout', xml))
-        .pipe(gulp.dest('./pkg/layouts/'));
+        .pipe(file('src/layouts/Account-AllFields.layout', layoutxml, { src: true }))
+        .pipe(file('src/package.xml', packagexml))
+        .pipe(gulp.dest('pkg'))
+        .pipe(zip('pkg.zip'))
+        .pipe(deploy({
+          username: SF_USERNAME,
+          password: SF_PASSWORD
+        }));
     });
   });
 });

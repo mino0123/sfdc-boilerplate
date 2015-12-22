@@ -24,14 +24,13 @@ module.exports = (options) => {
       conn.metadata.pollTimeout = options.pollTimeout || 60e3;
       return conn
         .metadata.retrieve(options.retrieve).complete({ details: true });
-    }, err => {
+    }, (err) => {
       stream.emit('error', new Error(err.message));
     })
-    .then(res => {
+    .then((res) => {
       if (res.success) {
         const buf = new Buffer(res.zipFile, 'base64');
         stream.write(new File({contents: buf}));
-        // stream.end();
       } else {
         stream.emit('error', new Error('Retrieve failed.'));
       }
