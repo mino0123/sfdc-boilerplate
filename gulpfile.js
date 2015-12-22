@@ -128,7 +128,6 @@ gulp.task('deploy-layout', (cb) => {
       through.obj()
         .pipe(file('src/layouts/Account-AllFields.layout', layoutxml, { src: true }))
         .pipe(file('src/package.xml', packagexml))
-        .pipe(gulp.dest('pkg'))
         .pipe(zip('pkg.zip'))
         .pipe(deploy({
           username: SF_USERNAME,
