@@ -8,7 +8,7 @@ const retireve = require('./tasks/retrieve.js');
 const jsforce = require('jsforce');
 const metadata = require('salesforce-metadata-xml-builder');
 
-const API_VERSION = '35.0';
+const API_VERSION = '36.0';
 const SF_USERNAME = process.env.SF_USERNAME;
 const SF_PASSWORD = process.env.SF_PASSWORD;
 
