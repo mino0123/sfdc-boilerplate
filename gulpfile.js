@@ -136,3 +136,24 @@ gulp.task('deploy-layout', (cb) => {
     });
   });
 });
+
+gulp.task('install-package', () => {
+  const packageName = 'MyPackage';
+  const packageVersion = '1.0';
+  const installedpackagexml = metadata.InstalledPackage({
+    fullName: packageName,
+    versionNumber: packageVersion
+  });
+  const packagexml = metadata.Package({
+    types: [{ name: 'InstalledPackage', members: ['*'] }],
+    version: API_VERSION
+  });
+  return through.obj()
+    .pipe(file(`src/installedPackages/${packageName}.installedPackage`, installedpackagexml, { src: true }))
+    .pipe(file('src/package.xml', packagexml))
+    .pipe(zip('pkg.zip'))
+    .pipe(deploy({
+      username: SF_USERNAME,
+      password: SF_PASSWORD
+    }));
+});
